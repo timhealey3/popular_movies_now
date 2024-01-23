@@ -1,28 +1,21 @@
 import requests
+from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
 
-
 def imdb_data():
-    url_imdb = 'https://www.imdb.com/search/title/?groups=top_100&ref_=adv_prv'
 
-    headers = {"Accept-Language": "en-US, en;q=0.5"}
-
-    results_imdb = requests.get(url_imdb, headers=headers)
-
-    imdb_soup = BeautifulSoup(results_imdb.text, "html.parser")
+    site= "https://www.imdb.com/search/title/?user_rating=1,&groups=top_100"
+    # IMDB checks for user-agent. else giving 403 error
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    req = Request(site,headers=headers)
+    page = urlopen(req)
+    imdb_soup = BeautifulSoup(page, 'html.parser')
 
     imdb_rank = []
     imdb_name = []
     imdb_score = []
 
-    for tag in imdb_soup.find_all('h3'):
-        name = tag.find('a')
-        rank = tag.find('span', class_='lister-item-index unbold text-primary')
-        #score = tag.find('div', class_='inline-block ratings-imdb-rating')['data-value']
-        #print(score)
-        if name is not None and rank is not None:
-            imdb_name.append(name.get_text())
-            imdb_rank.append(rank.get_text())
-         #   imdb_score.append(score.get_text())
-
+    for x in imdb_soup.find_all('h3', class_='ipc-title__text'):
+        imdb_name.append(x.text[3::])
+    
     return imdb_name
